@@ -19,7 +19,7 @@ class Database
          * Dit is de connectiestring die nodig voor het maken van een
          * nieuw PDO object
          */
-        $conn = 'mysql:host=' . $this->dbHost . ';port=3308;dbname=' . $this->dbName;
+        $conn = 'mysql:host=' . $this->dbHost . ';dbname=' . $this->dbName;
 
         /**
          * We geven nog wat options mee voor het PDO-object om 
@@ -41,8 +41,10 @@ class Database
              * Wanneer er een error optreedt, wordt er een PDOException object 
              * aangemaakt met informatie over de error
              */
-            echo 'Connection failed: ' . $e->getMessage();
-            $this->dbHandler = null; // Ensure dbHandler is null on failure
+            error_log($e->getMessage(), 0);
+            echo "Op dit moment kunnen we u niet helpen... probeer het later nog eens";
+            header('Refresh:30; url=' . URLROOT . '/homepages/index');
+            exit;
         }
     }
 
@@ -62,6 +64,21 @@ class Database
      */
     public function bind($parameter, $value, $type = null)
     {
+        if (is_null($type)) {
+            switch (true) {
+                case is_int($value):
+                    $type = PDO::PARAM_INT;
+                    break;
+                case is_bool($value):
+                    $type = PDO::PARAM_BOOL;
+                    break;
+                case is_null($value):
+                    $type = PDO::PARAM_NULL;
+                    break;
+                default:
+                    $type = PDO::PARAM_STR;
+            }
+        }
         $this->statement->bindValue($parameter, $value, $type);
     }
 
@@ -77,7 +94,11 @@ class Database
     {
         $this->statement->execute();
         $result = $this->statement->fetch(PDO::FETCH_OBJ);
-        $this->statement->closecursor();
+        $this->statement->closeCursor();
         return $result;
+    }
+
+    public function outQuery($sql) {
+        return $this->dbHandler->query($sql);
     }
 }

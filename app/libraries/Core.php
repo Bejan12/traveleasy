@@ -6,7 +6,7 @@
 class Core 
 {
     // In de variabele $currentController stoppen we de naam van de controller
-    protected $currentController = 'Home';
+    protected $currentController = 'Homepages';
 
     // In de variabele $currentMethod stoppen we de naam van de method in de controllerclass
     protected $currentMethod = 'index';
@@ -24,7 +24,7 @@ class Core
         /**
          * Check of de controllerclass bestaat
          */
-        if (isset($url[0]) && file_exists('../app/controllers/' . ucwords($url[0]) . '.php')) {
+        if (file_exists('../app/controllers/' . ucwords($url[0]) . '.php')) {
 
             /**
              * Stop de naam van de controller in $this->currentController
@@ -50,12 +50,17 @@ class Core
         /**
          * Check of de method (tweede woord in de URL) bestaat in de controllerclass
          */
-        if (isset($url[1]) && method_exists($this->currentController, $url[1])) {
+        if (method_exists($this->currentController, $url[1])) {
+
+            /**
+             * Bewaar de naam van de method in $this->currentMethod
+             */
             $this->currentMethod = $url[1];
+
+            /**
+             * Verwijder de naam van de method uit het array $url
+             */
             unset($url[1]);
-        } else {
-            // Provide a fallback method if the specified method does not exist
-            $this->currentMethod = method_exists($this->currentController, 'index') ? 'index' : '';
         }
 
         /**
@@ -68,12 +73,7 @@ class Core
         /**
          * Roep de method met alle parameters aan van de class 
          */
-        if (!empty($this->currentMethod)) {
-            call_user_func_array([$this->currentController, $this->currentMethod], $this->params);
-        } else {
-            // Handle the case where no valid method is found
-            echo 'Method does not exist';
-        }
+        call_user_func_array([$this->currentController, $this->currentMethod], $this->params);
     }
 
 
@@ -96,7 +96,7 @@ class Core
              * Wanneer er niets achter de vhost-naam wordt gezet
              * dan wordt het onderstaande array in $url gezet
              */
-            $url = array('home', 'index');
+            $url = array('homepages', 'index');
         }
         return $url;
     }

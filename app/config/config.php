@@ -7,10 +7,11 @@ define('DB_NAME', 'traveleasy');
 define('DB_USER', 'root');
 define('DB_PASS', '');
 
+
 /**
  * De naam van de virtualhost
  */
-define('URLROOT', 'http://traveleasy');
+define('URLROOT', 'http://traveleasy/');
 
 /**
  * Het pad naar de folder app
