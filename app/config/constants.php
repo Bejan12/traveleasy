@@ -1,3 +1,11 @@
 <?php
-// Voeg hier je constante definities toe
-define('SOME_CONSTANT', 'some_value');
+
+define('CONTINENTS', [
+    'Afrika', 
+    'Antarctica', 
+    'Azi&euml;', 
+    'Europa', 
+    'Noord-Amerika', 
+    'Zuid-Amerika', 
+    'Oceani&euml;'
+]);

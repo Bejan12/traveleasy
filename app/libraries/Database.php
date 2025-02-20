@@ -1,83 +1,74 @@
 <?php
-/**
- * Dit is de database class die alle communicatie met de database verzorgt
- */
+// app/libraries/Database.php
 
 class Database
 {
-    private $dbHost = DB_HOST;
-    private $dbName = DB_NAME;
-    private $dbUser = DB_USER;
-    private $dbPass = DB_PASS;
+    private $dbHost = 'localhost';  // Hostnaam
+    private $dbName = 'patients';   // Naam van de database (uit je dump)
+    private $dbUser = 'root';       // Gebruikersnaam (uit je dump)
+    private $dbPass = '';           // Wachtwoord (uit je dump, leeg in dit geval)
 
     private $dbHandler;
     private $statement;
 
     public function __construct()
     {
-        /**
-         * Dit is de connectiestring die nodig voor het maken van een
-         * nieuw PDO object
-         */
-        $conn = 'mysql:host=' . $this->dbHost . ';port=3308;dbname=' . $this->dbName;
-
-        /**
-         * We geven nog wat options mee voor het PDO-object om 
-         * fouten weer te geven
-         */
-        $options = array(
+        // De connectie string voor PDO, met database naam 'patients'
+        $conn = 'mysql:host=' . $this->dbHost . ';dbname=' . $this->dbName . ';charset=utf8mb4'; 
+        $options = [
             PDO::ATTR_PERSISTENT => true,
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_EMULATE_PREPARES => false
-        );
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ];
 
         try {
-            /**
-             * Maken we een verbinding met de database mysql server
-             */
+            // Proberen verbinding te maken met de database
             $this->dbHandler = new PDO($conn, $this->dbUser, $this->dbPass, $options);
         } catch (PDOException $e) {
-            /**
-             * Wanneer er een error optreedt, wordt er een PDOException object 
-             * aangemaakt met informatie over de error
-             */
-            echo 'Connection failed: ' . $e->getMessage();
-            $this->dbHandler = null; // Ensure dbHandler is null on failure
+            // Foutmelding als de verbinding niet lukt
+            die('Database Error: ' . $e->getMessage());
         }
     }
 
+    // Bereidt een SQL-query voor
     public function query($sql)
     {
         $this->statement = $this->dbHandler->prepare($sql);
     }
 
-    public function resultSet()
+    // Bindt een parameter aan een waarde
+    public function bind($param, $value, $type = null)
     {
-        $this->statement->execute();
-        return $this->statement->fetchAll(PDO::FETCH_OBJ);
+        if (is_null($type)) {
+            $type = is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR;
+        }
+        $this->statement->bindValue($param, $value, $type);
     }
 
-    /**
-     * Deze methode bind de waardes aan de parameters in de query
-     */
-    public function bind($parameter, $value, $type = null)
-    {
-        $this->statement->bindValue($parameter, $value, $type);
-    }
-
-    /**
-     * Deze methode voert de query uit
-     */
+    // Voert de query uit
     public function execute()
     {
         return $this->statement->execute();
     }
 
+    // Haalt alle resultaten op
+    public function resultSet()
+    {
+        $this->execute();
+        return $this->statement->fetchAll(PDO::FETCH_OBJ);
+    }
+
+    // Haalt één enkel resultaat op
     public function single()
     {
-        $this->statement->execute();
-        $result = $this->statement->fetch(PDO::FETCH_OBJ);
-        $this->statement->closecursor();
-        return $result;
+        $this->execute();
+        return $this->statement->fetch(PDO::FETCH_OBJ);
+    }
+
+    // Haalt het laatst ingevoegde ID op
+    public function lastInsertId()
+    {
+        return $this->dbHandler->lastInsertId();
     }
 }
+?>
